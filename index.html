@@ -47,7 +47,7 @@
             JK
           </div>
           <div>
-            <h2 class="text-2xl font-bold hacker-text">John Karma</h2>
+            <h2 id="profileName" class="text-2xl font-bold hacker-text cursor-pointer">John Karma</h2>
             <p class="text-purple-400">Senior Architect</p>
           </div>
         </div>
@@ -100,12 +100,17 @@
     // Initialize data
     let posts = JSON.parse(localStorage.getItem('noxifyPosts')) || [];
     let messages = JSON.parse(localStorage.getItem('noxifyMessages')) || [];
+    let userName = localStorage.getItem('noxifyUserName') || 'John Karma';
 
     // DOM elements
     const feed = document.getElementById('feed');
     const messagesContainer = document.getElementById('messages');
     const postForm = document.getElementById('postForm');
     const messageForm = document.getElementById('messageForm');
+    const profileName = document.getElementById('profileName');
+
+    // Set initial profile name
+    profileName.textContent = userName;
 
     // Render functions
     function renderPosts() {
@@ -114,14 +119,15 @@
           <div class="glassmorphism rounded-xl p-6">
             <div class="flex items-center space-x-4 mb-4">
               <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xl font-bold cyber-glow">
-                JK
+                ${userName.charAt(0)}
               </div>
               <div>
-                <h3 class="font-bold">John Karma</h3>
+                <h3 class="font-bold">${userName}</h3>
                 <p class="text-sm text-gray-300">Senior Architect</p>
               </div>
             </div>
             <p class="mb-4">${post.content}</p>
+            <div class="text-xs text-gray-400 mb-4">${new Date(post.timestamp).toLocaleString()}</div>
             <div class="flex space-x-4">
               <button
                 class="like-btn flex items-center text-purple-400 hover:text-purple-300 transition duration-300"
@@ -155,8 +161,8 @@
     function renderMessages() {
       messagesContainer.innerHTML = messages.map(message => {
         return `
-          <div class="flex ${message.sender === 'You' ? 'justify-end' : 'justify-start'}">
-            <div class="max-w-xs px-4 py-2 rounded-lg ${message.sender === 'You' ? 'bg-purple-500/30' : 'bg-blue-500/30'}">
+          <div class="flex ${message.sender === userName ? 'justify-end' : 'justify-start'}">
+            <div class="max-w-xs px-4 py-2 rounded-lg ${message.sender === userName ? 'bg-purple-500/30' : 'bg-blue-500/30'}">
               <p class="font-semibold">${message.sender}</p>
               <p>${message.content}</p>
             </div>
@@ -170,7 +176,12 @@
       e.preventDefault();
       const newPost = document.getElementById('newPost').value.trim();
       if (newPost) {
-        posts.unshift({ id: Date.now(), content: newPost, likes: 0 });
+        posts.unshift({
+          id: Date.now(),
+          content: newPost,
+          likes: 0,
+          timestamp: Date.now()
+        });
         localStorage.setItem('noxifyPosts', JSON.stringify(posts));
         document.getElementById('newPost').value = '';
         renderPosts();
@@ -181,7 +192,11 @@
       e.preventDefault();
       const newMessage = document.getElementById('newMessage').value.trim();
       if (newMessage) {
-        messages.push({ id: Date.now(), content: newMessage, sender: 'You' });
+        messages.push({
+          id: Date.now(),
+          content: newMessage,
+          sender: userName
+        });
         localStorage.setItem('noxifyMessages', JSON.stringify(messages));
         document.getElementById('newMessage').value = '';
         renderMessages();
@@ -196,6 +211,16 @@
       renderPosts();
     }
 
+    function handleNameChange() {
+      const newName = prompt('Enter your new name:', userName);
+      if (newName && newName.trim() !== '') {
+        userName = newName.trim();
+        profileName.textContent = userName;
+        localStorage.setItem('noxifyUserName', userName);
+        renderPosts();
+      }
+    }
+
     // Initialize
     renderPosts();
     renderMessages();
@@ -203,6 +228,7 @@
     // Event listeners
     postForm.addEventListener('submit', handlePostSubmit);
     messageForm.addEventListener('submit', handleMessageSubmit);
+    profileName.addEventListener('click', handleNameChange);
   </script>
 </body>
 </html>
